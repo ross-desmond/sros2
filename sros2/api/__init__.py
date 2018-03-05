@@ -293,7 +293,7 @@ def create_permission_file(path, name, domain_id, permissions_dict):
     xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20160303/omg_shared_ca_permissions.xsd">
   <permissions>
     <grant name="%s_policies">
-      <subject_name>CN=%s</subject_name>
+      <subject_name>/CN=%s</subject_name>
       <validity>
       <!--
        Format is CCYY-MM-DDThh:mm:ss[Z|(+|-)hh:mm]
