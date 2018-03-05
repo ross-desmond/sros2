@@ -406,7 +406,6 @@ def create_permission_file(path, name, domain_id, permissions_dict):
 
     permission_str += """\
       </allow_rule>
-      <default>DENY</default>
     </grant>
   </permissions>
 </dds>
