@@ -1,0 +1,23 @@
+nodes:
+  listener:
+    topics:
+      chatter:
+        allow: s # can subscribe to chatter
+  talker:
+    topics:
+      chatter:
+        allow: p # can publish on chatter
+  ros_bridge: # bidirectional required for dynamic_bridge
+    topics:
+      chatter:
+        allow: ps # can publish/subscribe to chatter
+      points_no_ground:
+        allow: ps # can publish/subscribe on points_no_ground
+      filtered_points:
+        allow: ps # can publish/subscribe on filtered_points
+  lidar_tracker: # bidirectional required for dynamic_bridge
+    topics:
+      points_no_ground:
+        allow: p # can publish on points_no_ground
+      filtered_points:
+        allow: p # can publish on filtered_points
