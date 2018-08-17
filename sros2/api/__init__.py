@@ -321,9 +321,15 @@ def create_permission_file(path, name, domain_id, permissions_dict):
           <id>%s</id>
         </domains>
 """ % (name, name, domain_id)
-    # access control only on topics for now
-    topic_dict = permissions_dict['topics']
-    if topic_dict:
+    topic_dict = permissions_dict['topics'] if 'topics' in permissions_dict else None
+    service_dict = permissions_dict['services'] if 'services' in permissions_dict else None
+    wildcardall = topic_dict is None and service_dict is None
+
+    if not wildcardall:
+        # access control for topics
+        topic_dict = permissions_dict['topics']
+        TOPIC_PREFIX = 'rt/'
+        TOPIC_SUFFIX = ''
         # add rules for automatically created ros2 topics
         # TODO(mikaelarguedas) remove this hardcoded handling for default topics
         # TODO(mikaelarguedas) update dictionary based on existing rule
@@ -353,19 +359,33 @@ def create_permission_file(path, name, domain_id, permissions_dict):
           </topics>
         </%s>
 """ % (tag, 'rt/' + topic_name, tag)
+        # access control for services
         # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
-        service_topic_prefixes = {
-            'Request': 'rq/%s/' % name,
-            'Reply': 'rr/%s/' % name,
+        # policies: x execute, c call
+
+        service_permission_mapping = {
+            'x': ('publish_request', 'subscribe_reply'),
+            'c': ('publish_reply', 'subscribe_request'),
         }
-        default_parameter_topics = [
-            'describe_parameters',
-            'get_parameters',
-            'get_parameter_types',
-            'list_parameters',
-            'set_parameters',
-            'set_parameters_atomically',
-        ]
+        # 'subcribe': ('rq/', 'Request'), )
+        # rr/', 'Reply')
+        REQUEST_PREFIX = 'rq/'
+        REQUEST_SUFFIX = 'REQUEST'
+        REPLY_PREFIX = 'rr/'
+        REPLY_SUFFIX = 'REPLY'
+
+        # service_topic_prefixes = {
+        #     'Request': 'rq/%s/' % name,
+        #     'Reply': 'rr/%s/' % name,
+        # }
+        default_parameter_services_permissions = {
+            'describe_parameters': 'xc',
+            'get_parameters': 'xc',
+            'get_parameter_types': 'xc',
+            'list_parameters': 'xc',
+            'set_parameters': 'xc',
+            'set_parameters_atomically': 'xc',
+        }
         for topic_suffix, topic_prefix in service_topic_prefixes.items():
             service_topics = [
                 (topic_prefix + topic + topic_suffix) for topic in default_parameter_topics]
@@ -389,7 +409,6 @@ def create_permission_file(path, name, domain_id, permissions_dict):
           </topics>
         </subscribe>
 """ % (topics_string, topics_string)
-
     else:
         # no policy found: allow everything!
         permission_str += """\
