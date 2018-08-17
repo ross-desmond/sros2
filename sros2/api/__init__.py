@@ -422,7 +422,7 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         f.write(permission_str)
 
 
-def get_permissions(name, policy_file_path):
+def parse_permission_file(name, policy_file_path):
     import yaml
     if not os.path.isfile(policy_file_path):
         raise FileNotFoundError(policy_file_path)
@@ -431,7 +431,26 @@ def get_permissions(name, policy_file_path):
             graph = yaml.load(graph_permissions_file)
         except yaml.YAMLError as e:
             raise RuntimeError(str(e))
-        return graph['nodes'][name]
+    if name not in graph['nodes'].keys():
+        # no permission for this node
+        return {}
+    node_permissions = graph['nodes'][name]
+    # TODO(mikaelarguedas) here we actually need multiple information:
+    # what type of entity it applies to (topic, service, action?)
+    # what action the given entity is allowed to perform (publish to topic, call service etc)
+    # what the expanded topics will be:
+    # - prefixed: (ROS_PREFIX (rt/,rq/, etc)
+    # - namespaced appended after prefix: e.g. node_name for services
+    # - suffixed: e.g. Request, Reply for service topics
+    # Result: return a list of expanded rules:
+    # - List of topics to subscribe to
+    # - List of topics to publish to
+    # Could be a dictionary
+    # additional considerations:
+    # - allowing people to specify partitions? If yes for all entities?
+    # - support relay tags ?
+    # Where to add default permissions?
+    return node_permissions
 
 
 def create_signed_permissions_file(
@@ -453,7 +472,7 @@ def create_permission(args):
 
     key_dir = os.path.join(root, name)
     print('key_dir %s' % key_dir)
-    permissions_dict = get_permissions(name, policy_file_path)
+    permissions_dict = parse_permission_file(name, policy_file_path)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     create_permission_file(permissions_path, name, domain_id, permissions_dict)
 
