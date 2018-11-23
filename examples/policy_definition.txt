@@ -1,20 +1,22 @@
 ## Values used in policy generation
 **ipc_types**: The type of ROS IPC in use, such as service, action, or topic  
-**access_permissions**: The access permission of that node for the specified icp
+## Definitions
+|name|description|
+|----|-----------|
+|access_permission|The access permission of that node for the specified icp|
+|ipc|Inter-process communication, how messages get from one node to another|
+|ipc identifier|The specific subsystem id to provide access to (topic name, service name...)|
+|ipc types|The inter-process communication subsystem (topics, services...)|
 
-All ipc permissions are given on a client/source basis.
-`publish` allows a node to output on that service, topic, action
-`subscribe` allows input to a node from that service, topic, action
-
-```
-ipc_types:
-    - topics
-    - services
-    - actions
-access_permissions:
-     - publish
-     - subscribe
-```
+## Options
+Most ipc permissions are given on a client/source basis.
+Parameter permissions are slightly different. These specify whether this node is allowed to read/write to another node.
+|ipc_type|identifier|access permission options|
+|--------|----------|-------------------------|
+|topics|topic name|subscribe, publish|
+|services|service name|request, reply|
+|actions|action name|call, execute|
+|parameters|node_name|read, write|
 
 ## Policy yaml file layout
 
@@ -22,7 +24,7 @@ access_permissions:
 nodes:
     <node_name>:
         <ipc_type>:
-            <topic_name>
+            <ipc_identifier>
                 access:
                     -<access_permissions>
 ```
